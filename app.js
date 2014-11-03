@@ -19,7 +19,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
-  app.use(require('less-middleware')({ src: __dirname + '/public' }));
+  app.use(require('less-middleware')(__dirname + '/public'));
   app.use(express.static(path.join(__dirname, 'public')));
 });
 
@@ -52,10 +52,7 @@ app.post('/', function(req, res){
 
 // Show forecast data in JSONP format
 app.get('/api/forecast', function(req, res) {
-    if(!req.query.jsonp) {
-      return res.send(400, "Missig jsonp. Example: ?jsonp=myCallback");
-    }
-    return handleShowForecast(req, res, req.query.jsonp);
+    return handleShowForecast(req, res);
 });
 
 // Show forecast as plain HTML
@@ -65,7 +62,7 @@ app.get('/forecast', function(req, res) {
 
 // Generic handler of forecast that
 // outputs HTML or widget
-function handleShowForecast(req, res, jsonp) {
+function handleShowForecast(req, res) {
   var weatherUrl = req.query.url,
       limit = req.query.limit || 10;
 
@@ -80,9 +77,9 @@ function handleShowForecast(req, res, jsonp) {
       return res.send(err);
     }
     res.setHeader("X-Polman-Cache-Hit", fromCache || false);
-    res.setHeader("Content-Type", jsonp ? "application/javascript" : "text/html");
+    res.setHeader("Content-Type", "application/javascript");
 
-    res.render(jsonp ? 'forecast-jsonp' : 'forecast', {forecast: forecast, num: limit, moment: moment, jsonp: jsonp});
+    res.render('forecast-json', {forecast: forecast, num: limit, moment: moment});
   });
 }
 
